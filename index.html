@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สถิติการขาย</title>
+    <style>
+        /* --- Classic & Minimal Styling --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: #fcfcfc;
+            color: #111111;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        header {
+            border-bottom: 2px solid #111111;
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 14px;
+            border-bottom: 1px solid #111111;
+            padding-bottom: 4px;
+        }
+
+        section {
+            margin-bottom: 28px;
+        }
+
+        /* --- Month Selector Toolbar --- */
+        .month-selector {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .month-selector select {
+            padding: 6px 10px;
+            border: 1px solid #111111;
+            background-color: #ffffff;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        /* --- Stats Cards Layout --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .stat-card {
+            border: 1px solid #111111;
+            padding: 12px;
+            background-color: #ffffff;
+        }
+
+        .stat-card p {
+            font-size: 0.85rem;
+            color: #555555;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .value {
+            font-size: 1.35rem;
+            font-weight: 700;
+            font-family: monospace;
+            color: #000000;
+        }
+
+        /* --- Form Styling --- */
+        .order-form {
+            border: 1px solid #111111;
+            padding: 16px;
+            background-color: #ffffff;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        select, button {
+            padding: 8px 10px;
+            border: 1px solid #111111;
+            background-color: #ffffff;
+            font-size: 0.95rem;
+            border-radius: 0;
+            outline: none;
+        }
+
+        select:focus {
+            background-color: #f0f0f0;
+        }
+
+        button {
+            background-color: #111111;
+            color: #ffffff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        button:hover {
+            background-color: #333333;
+        }
+
+        button:disabled {
+            background-color: #888888;
+            cursor: not-allowed;
+        }
+
+        /* --- Table Styling --- */
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid #111111;
+            background-color: #ffffff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.95rem;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            border-bottom: 1px solid #111111;
+            font-weight: 600;
+        }
+
+        .font-mono {
+            font-family: monospace;
+        }
+
+        .status-msg {
+            font-size: 0.85rem;
+            margin-top: 5px;
+            color: #666666;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 12px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .order-form { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>สถิติการขาย</h1>
+        <!-- เมนูเลือกดูเดือน -->
+        <div class="month-selector">
+            <label for="monthFilter">เลือกเดือน:</label>
+            <select id="monthFilter" onchange="render()">
+                <!-- JavaScript จะเติมตัวเลือกเดือนให้เองอัตโนมัติ -->
+            </select>
+        </div>
+    </header>
+
+    <!-- Section 1: Dashboard Stats -->
+    <section>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <p id="selectedMonthTitle">ยอดประจำเดือนนี้</p>
+                <div class="value" id="statTotal">฿0</div>
+            </div>
+            <div class="stat-card">
+                <p>ยอดวันนี้</p>
+                <div class="value" id="statToday">฿0</div>
+            </div>
+            <div class="stat-card">
+                <p>จำนวนออเดอร์วันนี้</p>
+                <div class="value" id="statTodayOrders">0</div>
+            </div>
+            <div class="stat-card">
+                <p>สินค้าขายดี (เดือนนี้)</p>
+                <div class="value" id="statBestSeller" style="font-family: inherit; font-size: 1.1rem;">-</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Order Input Form -->
+    <section>
+        <h2>บันทึกออเดอร์</h2>
+        <form class="order-form" id="orderForm">
+            <div class="form-group">
+                <label for="oder">สินค้า:</label>
+                <select name="order" id="oder">
+                    <option value="ชาไทย">ชาไทย (30฿)</option>
+                    <option value="โกโก้">โกโก้ (30฿)</option>
+                    <option value="ชาเขียว">ชาเขียว (30฿)</option>
+                    <option value="ปังปิ้ง">ปังปิ้ง (20฿)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="quantity">จำนวน:</label>
+                <select name="quantity" id="quantity">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+            </div>
+
+            <button type="submit" id="submitBtn">+ บันทึกออเดอร์</button>
+        </form>
+        <p class="status-msg" id="statusMsg"></p>
+    </section>
+
+    <!-- Section 3: History Table -->
+    <section>
+        <h2>ประวัติการขาย (จาก Google Sheets)</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>วันที่ / เวลา</th>
+                        <th>สินค้า</th>
+                        <th>จำนวน</th>
+                        <th>ราคารวม</th>
+                    </tr>
+                </thead>
+                <tbody id="orderTableBody">
+                    <tr><td colspan="4" style="text-align: center;">กำลังโหลดข้อมูลจาก Cloud...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // ⚠️ อย่าลืมใส่ Google Apps Script Web App URL ของคุณตรงนี้
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzVaRbH8yUUkae77hzUwJoS7_ExIVmn6zs4HRP_bYxrLdGn0jtDTRksNEOPoJ7uzOUc/exec";
+
+        const itemPrices = {
+            "ชาไทย": 30,
+            "โกโก้": 30,
+            "ชาเขียว": 30,
+            "ปังปิ้ง": 20
+        };
+
+        let orders = [];
+
+        // ชื่อเดือนภาษาไทย
+        const thaiMonths = [
+            "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+            "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+        ];
+
+        // ฟังก์ชันช่วยแยก เดือน และ ปี (รองรับทั้ง พ.ศ. และ ค.ศ.)
+        function parseOrderDate(timeStr) {
+            if (!timeStr) return null;
+            const datePart = timeStr.split(' ')[0];
+            const parts = datePart.split('/');
+            if (parts.length === 3) {
+                const m = parseInt(parts[1]) - 1; // 0-11
+                let y = parseInt(parts[2]);
+                // ถ้าเป็น พ.ศ. (เกิน 2500) ให้แปลงเป็น ค.ศ. เพื่อคำนวณ
+                if (y > 2500) y -= 543;
+                return { month: m, year: y };
+            }
+            return null;
+        }
+
+        // สร้างตัวเลือกเดือนใน Dropdown อัตโนมัติจากข้อมูลที่มี
+        function initMonthSelector() {
+            const selector = document.getElementById('monthFilter');
+            selector.innerHTML = '';
+
+            let availableMonths = new Set();
+            orders.forEach(order => {
+                const d = parseOrderDate(order.time);
+                if (d) {
+                    availableMonths.add(`${d.year}-${d.month}`);
+                }
+            });
+
+            const now = new Date();
+            availableMonths.add(`${now.getFullYear()}-${now.getMonth()}`);
+
+            const sortedMonths = Array.from(availableMonths).sort().reverse();
+
+            sortedMonths.forEach(mStr => {
+                const [y, m] = mStr.split('-');
+                const option = document.createElement('option');
+                option.value = mStr;
+                // แสดงเป็น พ.ศ.
+                option.text = `${thaiMonths[m]} ${parseInt(y) + 543}`;
+                selector.appendChild(option);
+            });
+        }
+
+        // Fetch data from Google Sheet on page load
+        async function fetchOrdersFromCloud() {
+            if (GOOGLE_SCRIPT_URL === "YOUR_SCRIPT_URL_HERE") {
+                document.getElementById('orderTableBody').innerHTML = 
+                    `<tr><td colspan="4" style="color:red; text-align:center;">กรุณาใส่ GOOGLE_SCRIPT_URL ในไฟล์ HTML ก่อนใช้งาน</td></tr>`;
+                return;
+            }
+
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL);
+                orders = await response.json();
+                initMonthSelector();
+                render();
+            } catch (error) {
+                console.error("Error loading data:", error);
+                document.getElementById('orderTableBody').innerHTML = 
+                    `<tr><td colspan="4" style="text-align: center; color: red;">โหลดข้อมูลไม่สำเร็จ</td></tr>`;
+            }
+        }
+
+        // Render metrics & table rows based on selected month
+        function render() {
+            const tableBody = document.getElementById('orderTableBody');
+            tableBody.innerHTML = '';
+
+            const today = new Date();
+            const todayStr = today.toLocaleDateString('th-TH');
+
+            const selectedMonthVal = document.getElementById('monthFilter').value;
+            let selYear = today.getFullYear();
+            let selMonth = today.getMonth();
+            if (selectedMonthVal) {
+                const parts = selectedMonthVal.split('-');
+                selYear = parseInt(parts[0]);
+                selMonth = parseInt(parts[1]);
+            }
+
+            document.getElementById('selectedMonthTitle').innerText = `ยอดเดือน ${thaiMonths[selMonth]}`;
+
+            let monthlyMoney = 0;
+            let todayMoney = 0;
+            let todayOrdersCount = 0;
+            let productCounts = {};
+
+            if (orders.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center;">ยังไม่มีข้อมูลออเดอร์</td></tr>`;
+            }
+
+            orders.slice().reverse().forEach((order) => {
+                const qty = Number(order.qty) || 0;
+                const total = Number(order.total) || 0;
+                
+                const d = parseOrderDate(order.time);
+                if (d && d.month === selMonth && d.year === selYear) {
+                    monthlyMoney += total;
+                    productCounts[order.item] = (productCounts[order.item] || 0) + qty;
+                }
+
+                if (order.time && order.time.includes(todayStr)) {
+                    todayMoney += total;
+                    todayOrdersCount += 1;
+                }
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="font-mono">${order.time}</td>
+                    <td><strong>${order.item}</strong></td>
+                    <td class="font-mono">${qty}</td>
+                    <td class="font-mono">฿${total.toLocaleString()}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            let bestSeller = "-";
+            let maxQty = 0;
+            for (const [item, qty] of Object.entries(productCounts)) {
+                if (qty > maxQty) {
+                    maxQty = qty;
+                    bestSeller = `${item} (${qty} ชิ้น)`;
+                }
+            }
+
+            document.getElementById('statTotal').innerText = `฿${monthlyMoney.toLocaleString()}`;
+            document.getElementById('statToday').innerText = `฿${todayMoney.toLocaleString()}`;
+            document.getElementById('statTodayOrders').innerText = todayOrdersCount;
+            document.getElementById('statBestSeller').innerText = bestSeller;
+        }
+
+        // Handle Add Order
+        document.getElementById('orderForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const statusMsg = document.getElementById('statusMsg');
+
+            const item = document.getElementById('oder').value;
+            const price = itemPrices[item] || 30;
+            const qty = parseInt(document.getElementById('quantity').value) || 1;
+            const total = price * qty;
+
+            const now = new Date();
+            const timeStr = now.toLocaleDateString('th-TH') + ' ' + now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+
+            const newOrder = {
+                time: timeStr,
+                item: item,
+                qty: qty,
+                total: total
+            };
+
+            submitBtn.disabled = true;
+            statusMsg.innerText = "กำลังบันทึกลง Google Sheet...";
+
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newOrder)
+                });
+
+                statusMsg.innerText = "บันทึกเรียบร้อย!";
+                orders.push(newOrder);
+                initMonthSelector();
+                render();
+
+                setTimeout(() => { statusMsg.innerText = ""; }, 3000);
+            } catch (error) {
+                console.error("Save failed:", error);
+                statusMsg.innerText = "เกิดข้อผิดพลาดในการบันทึก";
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Load data on start
+        fetchOrdersFromCloud();
+    </script>
+</body>
+
+</html>

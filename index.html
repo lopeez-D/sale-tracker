@@ -1,285 +1,150 @@
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>สถิติการขาย</title>
+    <title>สถิติการขาย (Sales History)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script> 
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Prompt -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* --- Classic & Minimal Styling --- */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
-
         body {
-            background-color: #fcfcfc;
-            color: #111111;
-            padding: 20px;
-            max-width: 900px;
-            margin: 0 auto;
-            line-height: 1.5;
+            font-family: 'Prompt', sans-serif;
+            background-color: #f8fafc;
         }
-
-        header {
-            border-bottom: 2px solid #111111;
-            padding-bottom: 12px;
-            margin-bottom: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-
-        h1 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            letter-spacing: -0.5px;
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
         }
-
-        h2 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 14px;
-            border-bottom: 1px solid #111111;
-            padding-bottom: 4px;
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
         }
-
-        section {
-            margin-bottom: 28px;
-        }
-
-        /* --- Month Selector Toolbar --- */
-        .month-selector {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .month-selector select {
-            padding: 6px 10px;
-            border: 1px solid #111111;
-            background-color: #ffffff;
-            font-size: 0.9rem;
-            outline: none;
-        }
-
-        /* --- Stats Cards Layout --- */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-        }
-
-        .stat-card {
-            border: 1px solid #111111;
-            padding: 12px;
-            background-color: #ffffff;
-        }
-
-        .stat-card p {
-            font-size: 0.85rem;
-            color: #555555;
-            margin-bottom: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-card .value {
-            font-size: 1.35rem;
-            font-weight: 700;
-            font-family: monospace;
-            color: #000000;
-        }
-
-        /* --- Form Styling --- */
-        .order-form {
-            border: 1px solid #111111;
-            padding: 16px;
-            background-color: #ffffff;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 12px;
-            align-items: end;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        label {
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        select, button {
-            padding: 8px 10px;
-            border: 1px solid #111111;
-            background-color: #ffffff;
-            font-size: 0.95rem;
-            border-radius: 0;
-            outline: none;
-        }
-
-        select:focus {
-            background-color: #f0f0f0;
-        }
-
-        button {
-            background-color: #111111;
-            color: #ffffff;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.15s ease;
-        }
-
-        button:hover {
-            background-color: #333333;
-        }
-
-        button:disabled {
-            background-color: #888888;
-            cursor: not-allowed;
-        }
-
-        /* --- Table Styling --- */
-        .table-container {
-            overflow-x: auto;
-            border: 1px solid #111111;
-            background-color: #ffffff;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-
-        th, td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #e0e0e0;
-            font-size: 0.95rem;
-        }
-
-        th {
-            background-color: #f2f2f2;
-            border-bottom: 1px solid #111111;
-            font-weight: 600;
-        }
-
-        .font-mono {
-            font-family: monospace;
-        }
-
-        .status-msg {
-            font-size: 0.85rem;
-            margin-top: 5px;
-            color: #666666;
-        }
-
-        @media (max-width: 600px) {
-            body { padding: 12px; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .order-form { grid-template-columns: 1fr; }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
     </style>
 </head>
+<body class="text-slate-800 min-h-screen pb-12">
 
-<body>
+    <!-- Top Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white shadow-md shadow-emerald-100">
+                    <i class="fa-solid fa-receipt text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight text-slate-900">สถิติการขาย</h1>
+                    <p class="text-xs text-slate-500">ข้อมูลซิงค์จาก Google Sheets</p>
+                </div>
+            </div>
 
-    <header>
-        <h1>สถิติการขาย</h1>
-        <!-- เมนูเลือกดูเดือน -->
-        <div class="month-selector">
-            <label for="monthFilter">เลือกเดือน:</label>
-            <select id="monthFilter" onchange="render()">
-                <!-- JavaScript จะเติมตัวเลือกเดือนให้เองอัตโนมัติ -->
-            </select>
+            <!-- Month Selector Toolbar -->
+            <div class="flex items-center gap-2">
+                <label for="monthFilter" class="text-xs sm:text-sm font-semibold text-slate-700 whitespace-nowrap">เลือกเดือน:</label>
+                <select id="monthFilter" onchange="render()" 
+                        class="bg-slate-50 border border-slate-300 text-slate-800 text-xs sm:text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 p-2 font-medium cursor-pointer transition-all">
+                    <!-- JavaScript จะเติมตัวเลือกเดือนให้เองอัตโนมัติ -->
+                </select>
+            </div>
         </div>
     </header>
 
-    <!-- Section 1: Dashboard Stats -->
-    <section>
-        <div class="stats-grid">
-            <div class="stat-card">
-                <p id="selectedMonthTitle">ยอดประจำเดือนนี้</p>
-                <div class="value" id="statTotal">฿0</div>
-            </div>
-            <div class="stat-card">
-                <p>ยอดวันนี้</p>
-                <div class="value" id="statToday">฿0</div>
-            </div>
-            <div class="stat-card">
-                <p>จำนวนออเดอร์วันนี้</p>
-                <div class="value" id="statTodayOrders">0</div>
-            </div>
-            <div class="stat-card">
-                <p>สินค้าขายดี (เดือนนี้)</p>
-                <div class="value" id="statBestSeller" style="font-family: inherit; font-size: 1.1rem;">-</div>
-            </div>
-        </div>
-    </section>
+    <!-- Main Container -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
 
-    <!-- Section 2: Order Input Form -->
-    <section>
-        <h2>บันทึกออเดอร์</h2>
-        <form class="order-form" id="orderForm">
-            <div class="form-group">
-                <label for="oder">สินค้า:</label>
-                <select name="order" id="oder">
-                    <option value="ชาไทย">ชาไทย (30฿)</option>
-                    <option value="โกโก้">โกโก้ (30฿)</option>
-                    <option value="ชาเขียว">ชาเขียว (30฿)</option>
-                    <option value="ปังปิ้ง">ปังปิ้ง (20฿)</option>
-                </select>
+        <!-- Section 1: Dashboard Stats (เรียง 5 การ์ดในแถวเดียว) -->
+        <section>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400" id="selectedMonthTitle">ยอดเดือนนี้</p>
+                    <div class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1 font-mono" id="statTotal">฿0</div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400" id="selectedMonthItemsTitle">ชิ้น (เดือนนี้)</p>
+                    <div class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1 font-mono" id="statMonthItems">0</div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">ยอดวันนี้</p>
+                    <div class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1 font-mono" id="statToday">฿0</div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">ชิ้นวันนี้</p>
+                    <div class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1 font-mono" id="statTodayItems">0</div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm col-span-2 sm:col-span-1">
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">สินค้าขายดี</p>
+                    <div class="text-base sm:text-lg font-bold text-slate-900 mt-1 truncate" id="statBestSeller">-</div>
+                </div>
             </div>
+        </section>
 
-            <div class="form-group">
-                <label for="quantity">จำนวน:</label>
-                <select name="quantity" id="quantity">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                </select>
+        <!-- Section 2: Order Input Form -->
+        <section class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+            <h2 class="font-bold text-slate-800 text-base mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-cart-plus text-emerald-600"></i> บันทึกออเดอร์
+            </h2>
+            <form class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end" id="orderForm">
+                <div class="flex flex-col gap-1.5">
+                    <label for="oder" class="text-xs font-semibold text-slate-700">สินค้า:</label>
+                    <select name="order" id="oder" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl p-2.5 font-medium focus:ring-emerald-500 focus:border-emerald-500">
+                        <option value="ชาไทย">ชาไทย (30฿)</option>
+                        <option value="โกโก้">โกโก้ (30฿)</option>
+                        <option value="ชาเขียว">ชาเขียว (30฿)</option>
+                        <option value="ปังปิ้ง">ปังปิ้ง (20฿)</option>
+                    </select>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label for="quantity" class="text-xs font-semibold text-slate-700">จำนวน:</label>
+                    <select name="quantity" id="quantity" class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl p-2.5 font-medium focus:ring-emerald-500 focus:border-emerald-500">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white font-medium text-sm rounded-xl transition-all shadow-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus text-xs"></i> บันทึกออเดอร์
+                </button>
+            </form>
+            <p class="text-xs text-slate-500 mt-2" id="statusMsg"></p>
+        </section>
+
+        <!-- Section 3: History Table -->
+        <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h2 class="font-bold text-slate-800 text-base">ประวัติการขาย (จาก Google Sheets)</h2>
             </div>
-
-            <button type="submit" id="submitBtn">+ บันทึกออเดอร์</button>
-        </form>
-        <p class="status-msg" id="statusMsg"></p>
-    </section>
-
-    <!-- Section 3: History Table -->
-    <section>
-        <h2>ประวัติการขาย (จาก Google Sheets)</h2>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>วันที่ / เวลา</th>
-                        <th>สินค้า</th>
-                        <th>จำนวน</th>
-                        <th>ราคารวม</th>
-                    </tr>
-                </thead>
-                <tbody id="orderTableBody">
-                    <tr><td colspan="4" style="text-align: center;">กำลังโหลดข้อมูลจาก Cloud...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200/80">
+                            <th class="py-3.5 px-5">วันที่ / เวลา</th>
+                            <th class="py-3.5 px-5">สินค้า</th>
+                            <th class="py-3.5 px-5 text-center">จำนวน</th>
+                            <th class="py-3.5 px-5 text-right">ราคารวม</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderTableBody" class="divide-y divide-slate-100">
+                        <tr><td colspan="4" class="text-center py-8 text-slate-400">กำลังโหลดข้อมูลจาก Cloud...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
 
     <!-- JavaScript Logic -->
     <script>
-        // ⚠️ อย่าลืมใส่ Google Apps Script Web App URL ของคุณตรงนี้
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzVaRbH8yUUkae77hzUwJoS7_ExIVmn6zs4HRP_bYxrLdGn0jtDTRksNEOPoJ7uzOUc/exec";
 
         const itemPrices = {
@@ -291,35 +156,47 @@
 
         let orders = [];
 
-        // ชื่อเดือนภาษาไทย
         const thaiMonths = [
             "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
             "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
         ];
 
-        // ฟังก์ชันช่วยแยก เดือน และ ปี (รองรับทั้ง พ.ศ. และ ค.ศ.)
         function parseOrderDate(timeStr) {
             if (!timeStr) return null;
-            const datePart = timeStr.split(' ')[0];
-            const parts = datePart.split('/');
-            if (parts.length === 3) {
-                const m = parseInt(parts[1]) - 1; // 0-11
-                let y = parseInt(parts[2]);
-                // ถ้าเป็น พ.ศ. (เกิน 2500) ให้แปลงเป็น ค.ศ. เพื่อคำนวณ
-                if (y > 2500) y -= 543;
-                return { month: m, year: y };
+            let str = String(timeStr).trim();
+
+            if (str.startsWith("'")) {
+                str = str.substring(1);
             }
+
+            if (str.includes('/')) {
+                const datePart = str.split(' ')[0];
+                const parts = datePart.split('/');
+                if (parts.length === 3) {
+                    const day = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1; // 0-11
+                    let year = parseInt(parts[2], 10);
+
+                    if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
+                    if (year > 2500) year -= 543;
+
+                    return { day: day, month: month, year: year };
+                }
+            }
+
             return null;
         }
 
-        // สร้างตัวเลือกเดือนใน Dropdown อัตโนมัติจากข้อมูลที่มี
+        // สร้างตัวเลือกเดือนใน Dropdown อัตโนมัติ
         function initMonthSelector() {
             const selector = document.getElementById('monthFilter');
+            const currentSelection = selector.value;
             selector.innerHTML = '';
 
             let availableMonths = new Set();
             orders.forEach(order => {
-                const d = parseOrderDate(order.time);
+                const itemTime = order.time || order.date || order[0];
+                const d = parseOrderDate(itemTime);
                 if (d) {
                     availableMonths.add(`${d.year}-${d.month}`);
                 }
@@ -328,26 +205,29 @@
             const now = new Date();
             availableMonths.add(`${now.getFullYear()}-${now.getMonth()}`);
 
-            const sortedMonths = Array.from(availableMonths).sort().reverse();
+            const sortedMonths = Array.from(availableMonths).sort((a, b) => {
+                const [y1, m1] = a.split('-').map(Number);
+                const [y2, m2] = b.split('-').map(Number);
+                if (y1 !== y2) return y2 - y1;
+                return m2 - m1;
+            });
 
             sortedMonths.forEach(mStr => {
                 const [y, m] = mStr.split('-');
                 const option = document.createElement('option');
                 option.value = mStr;
-                // แสดงเป็น พ.ศ.
-                option.text = `${thaiMonths[m]} ${parseInt(y) + 543}`;
+                option.text = `${thaiMonths[parseInt(m)]} ${parseInt(y) + 543}`;
                 selector.appendChild(option);
             });
+
+            if (currentSelection && sortedMonths.includes(currentSelection)) {
+                selector.value = currentSelection;
+            } else if (sortedMonths.length > 0) {
+                selector.value = sortedMonths[0];
+            }
         }
 
-        // Fetch data from Google Sheet on page load
         async function fetchOrdersFromCloud() {
-            if (GOOGLE_SCRIPT_URL === "YOUR_SCRIPT_URL_HERE") {
-                document.getElementById('orderTableBody').innerHTML = 
-                    `<tr><td colspan="4" style="color:red; text-align:center;">กรุณาใส่ GOOGLE_SCRIPT_URL ในไฟล์ HTML ก่อนใช้งาน</td></tr>`;
-                return;
-            }
-
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL);
                 orders = await response.json();
@@ -356,75 +236,99 @@
             } catch (error) {
                 console.error("Error loading data:", error);
                 document.getElementById('orderTableBody').innerHTML = 
-                    `<tr><td colspan="4" style="text-align: center; color: red;">โหลดข้อมูลไม่สำเร็จ</td></tr>`;
+                    `<tr><td colspan="4" class="text-center py-8 text-rose-500">โหลดข้อมูลไม่สำเร็จ</td></tr>`;
             }
         }
 
-        // Render metrics & table rows based on selected month
+        // Render metrics & table rows filtered strictly by selected month
         function render() {
             const tableBody = document.getElementById('orderTableBody');
             tableBody.innerHTML = '';
 
             const today = new Date();
-            const todayStr = today.toLocaleDateString('th-TH');
+            const todayDay = today.getDate();
+            const todayMonth = today.getMonth();
+            const todayYear = today.getFullYear();
 
             const selectedMonthVal = document.getElementById('monthFilter').value;
-            let selYear = today.getFullYear();
-            let selMonth = today.getMonth();
+            let selYear = todayYear;
+            let selMonth = todayMonth;
+
             if (selectedMonthVal) {
                 const parts = selectedMonthVal.split('-');
-                selYear = parseInt(parts[0]);
-                selMonth = parseInt(parts[1]);
+                selYear = parseInt(parts[0], 10);
+                selMonth = parseInt(parts[1], 10);
             }
 
-            document.getElementById('selectedMonthTitle').innerText = `ยอดเดือน ${thaiMonths[selMonth]}`;
+            document.getElementById('selectedMonthTitle').innerText = `ยอด${thaiMonths[selMonth]}`;
+            document.getElementById('selectedMonthItemsTitle').innerText = `ชิ้น(${thaiMonths[selMonth]})`;
 
             let monthlyMoney = 0;
+            let monthlyItemsCount = 0; 
             let todayMoney = 0;
-            let todayOrdersCount = 0;
+            let todayItemsCount = 0; 
             let productCounts = {};
-
-            if (orders.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center;">ยังไม่มีข้อมูลออเดอร์</td></tr>`;
-            }
+            let matchCount = 0;
 
             orders.slice().reverse().forEach((order) => {
-                const qty = Number(order.qty) || 0;
-                const total = Number(order.total) || 0;
+                const itemTime = order.time || order.date || order.dateRaw || order[0];
+                const itemName = order.item || order.product || order[1] || '-';
+                const qty = Number(order.qty || order[2]) || 0;
+                const total = Number(order.total || order[3]) || 0;
                 
-                const d = parseOrderDate(order.time);
+                const d = parseOrderDate(itemTime);
+
+                // คำนวณยอดและจำนวนชิ้นเฉพาะของวันนี้
+                if (d && d.day === todayDay && d.month === todayMonth && d.year === todayYear) {
+                    todayMoney += total;
+                    todayItemsCount += qty;
+                }
+
+                // กรองคำนวณและแสดงข้อมูลของเดือนที่เลือกใน Dropdown
                 if (d && d.month === selMonth && d.year === selYear) {
                     monthlyMoney += total;
-                    productCounts[order.item] = (productCounts[order.item] || 0) + qty;
-                }
+                    monthlyItemsCount += qty; 
+                    productCounts[itemName] = (productCounts[itemName] || 0) + qty;
+                    matchCount++;
 
-                if (order.time && order.time.includes(todayStr)) {
-                    todayMoney += total;
-                    todayOrdersCount += 1;
-                }
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-slate-50/80 transition-colors";
 
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="font-mono">${order.time}</td>
-                    <td><strong>${order.item}</strong></td>
-                    <td class="font-mono">${qty}</td>
-                    <td class="font-mono">฿${total.toLocaleString()}</td>
-                `;
-                tableBody.appendChild(row);
+                    let badgeStyle = "bg-slate-100 text-slate-700";
+                    if (itemName.includes('โกโก้')) badgeStyle = "bg-amber-100 text-amber-800";
+                    else if (itemName.includes('ชาไทย')) badgeStyle = "bg-orange-100 text-orange-800";
+                    else if (itemName.includes('ชาเขียว')) badgeStyle = "bg-emerald-100 text-emerald-800";
+                    else if (itemName.includes('ปังปิ้ง')) badgeStyle = "bg-yellow-100 text-yellow-800";
+
+                    row.innerHTML = `
+                        <td class="py-3.5 px-5 font-medium text-slate-600 whitespace-nowrap font-mono text-xs">${itemTime}</td>
+                        <td class="py-3.5 px-5 font-semibold text-slate-900">
+                            <span class="inline-block px-2.5 py-1 rounded-lg text-xs font-semibold ${badgeStyle}">${itemName}</span>
+                        </td>
+                        <td class="py-3.5 px-5 text-center font-bold text-slate-700 font-mono">${qty}</td>
+                        <td class="py-3.5 px-5 text-right font-bold text-emerald-600 font-mono">฿${total.toLocaleString()}</td>
+                    `;
+                    tableBody.appendChild(row);
+                }
             });
+
+            if (matchCount === 0) {
+                tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-slate-400">ไม่มีข้อมูลออเดอร์ในเดือนนี้</td></tr>`;
+            }
 
             let bestSeller = "-";
             let maxQty = 0;
             for (const [item, qty] of Object.entries(productCounts)) {
                 if (qty > maxQty) {
                     maxQty = qty;
-                    bestSeller = `${item} (${qty} ชิ้น)`;
+                    bestSeller = `${item} (${qty})`;
                 }
             }
 
             document.getElementById('statTotal').innerText = `฿${monthlyMoney.toLocaleString()}`;
+            document.getElementById('statMonthItems').innerText = monthlyItemsCount.toLocaleString(); 
             document.getElementById('statToday').innerText = `฿${todayMoney.toLocaleString()}`;
-            document.getElementById('statTodayOrders').innerText = todayOrdersCount;
+            document.getElementById('statTodayItems').innerText = todayItemsCount.toLocaleString();
             document.getElementById('statBestSeller').innerText = bestSeller;
         }
 
@@ -437,11 +341,11 @@
 
             const item = document.getElementById('oder').value;
             const price = itemPrices[item] || 30;
-            const qty = parseInt(document.getElementById('quantity').value) || 1;
+            const qty = parseInt(document.getElementById('quantity').value, 10) || 1;
             const total = price * qty;
 
             const now = new Date();
-            const timeStr = now.toLocaleDateString('th-TH') + ' ' + now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            const timeStr = `'${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear() + 543} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
             const newOrder = {
                 time: timeStr,
@@ -475,9 +379,8 @@
             }
         });
 
-        // Load data on start
+        // Initialize App on startup
         fetchOrdersFromCloud();
     </script>
 </body>
-
 </html>

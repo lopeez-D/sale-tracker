@@ -15,20 +15,10 @@
             font-family: 'Prompt', sans-serif;
             background-color: #f8fafc;
         }
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 9999px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen pb-12">
@@ -124,12 +114,12 @@
             <div class="px-5 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="font-bold text-slate-800 text-base">ประวัติการขาย (จาก Google Sheets)</h2>
                 
-                <!-- Delete Mode Controls -->
+                <!-- Remove List Controls -->
                 <div class="flex items-center gap-2">
-                    <button type="button" id="confirmDeleteBtn" onclick="deleteSelectedOrders()" class="hidden py-1.5 px-3 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl transition-all shadow-sm flex items-center gap-1.5">
+                    <button type="button" id="confirmDeleteBtn" onclick="deleteSelectedOrders()" class="hidden px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 shadow-sm">
                         <i class="fa-solid fa-trash-can"></i> ลบที่เลือก (<span id="selectedCount">0</span>)
                     </button>
-                    <button type="button" id="toggleDeleteBtn" onclick="toggleDeleteMode()" class="py-1.5 px-3 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5">
+                    <button type="button" id="toggleDeleteBtn" onclick="toggleDeleteMode()" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5">
                         <i class="fa-solid fa-list-check"></i> เลือกลบรายการ
                     </button>
                 </div>
@@ -139,7 +129,7 @@
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200/80">
-                            <th id="selectAllHeader" class="py-3.5 pl-5 pr-2 w-10 hidden">
+                            <th id="selectHeader" class="py-3.5 px-4 w-10 text-center hidden">
                                 <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded border-slate-300 text-rose-600 focus:ring-rose-500 cursor-pointer">
                             </th>
                             <th class="py-3.5 px-5">วันที่ / เวลา</th>
@@ -169,7 +159,6 @@
 
         let orders = [];
         let isDeleteMode = false;
-        let selectedRowIndexes = new Set();
 
         const thaiMonths = [
             "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
@@ -179,10 +168,7 @@
         function parseOrderDate(timeStr) {
             if (!timeStr) return null;
             let str = String(timeStr).trim();
-
-            if (str.startsWith("'")) {
-                str = str.substring(1);
-            }
+            if (str.startsWith("'")) str = str.substring(1);
 
             if (str.includes('/')) {
                 const datePart = str.split(' ')[0];
@@ -210,9 +196,7 @@
             orders.forEach(order => {
                 const itemTime = order.time || order.date || order[0];
                 const d = parseOrderDate(itemTime);
-                if (d) {
-                    availableMonths.add(`${d.year}-${d.month}`);
-                }
+                if (d) availableMonths.add(`${d.year}-${d.month}`);
             });
 
             const now = new Date();
@@ -221,8 +205,7 @@
             const sortedMonths = Array.from(availableMonths).sort((a, b) => {
                 const [y1, m1] = a.split('-').map(Number);
                 const [y2, m2] = b.split('-').map(Number);
-                if (y1 !== y2) return y2 - y1;
-                return m2 - m1;
+                return y1 !== y2 ? y2 - y1 : m2 - m1;
             });
 
             sortedMonths.forEach(mStr => {
@@ -253,96 +236,85 @@
             }
         }
 
-        // เปิด/ปิด โหมดเลือกลบรายการ
         function toggleDeleteMode() {
             isDeleteMode = !isDeleteMode;
-            selectedRowIndexes.clear();
-            document.getElementById('selectAllCheckbox').checked = false;
-
             const toggleBtn = document.getElementById('toggleDeleteBtn');
-            const selectAllHeader = document.getElementById('selectAllHeader');
+            const confirmBtn = document.getElementById('confirmDeleteBtn');
+            const selectHeader = document.getElementById('selectHeader');
+            const selectAll = document.getElementById('selectAllCheckbox');
+
+            selectAll.checked = false;
 
             if (isDeleteMode) {
                 toggleBtn.innerHTML = `<i class="fa-solid fa-xmark"></i> ยกเลิก`;
-                toggleBtn.className = "py-1.5 px-3 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5";
-                selectAllHeader.classList.remove('hidden');
+                toggleBtn.className = "px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5";
+                selectHeader.classList.remove('hidden');
             } else {
                 toggleBtn.innerHTML = `<i class="fa-solid fa-list-check"></i> เลือกลบรายการ`;
-                toggleBtn.className = "py-1.5 px-3 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5";
-                selectAllHeader.classList.add('hidden');
+                toggleBtn.className = "px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5";
+                selectHeader.classList.add('hidden');
+                confirmBtn.classList.add('hidden');
             }
-
-            updateDeleteButtonUI();
             render();
         }
 
-        function toggleRowSelection(rowIndex, checkbox) {
-            if (checkbox.checked) {
-                selectedRowIndexes.add(rowIndex);
-            } else {
-                selectedRowIndexes.delete(rowIndex);
-                document.getElementById('selectAllCheckbox').checked = false;
-            }
-            updateDeleteButtonUI();
-        }
-
-        function toggleSelectAll(masterCheckbox) {
-            const checkboxes = document.querySelectorAll('.row-checkbox');
-            selectedRowIndexes.clear();
-            checkboxes.forEach(cb => {
-                cb.checked = masterCheckbox.checked;
-                if (masterCheckbox.checked) {
-                    selectedRowIndexes.add(Number(cb.value));
-                }
-            });
-            updateDeleteButtonUI();
-        }
-
-        function updateDeleteButtonUI() {
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('.order-checkbox:checked');
             const confirmBtn = document.getElementById('confirmDeleteBtn');
-            const countSpan = document.getElementById('selectedCount');
-            countSpan.innerText = selectedRowIndexes.size;
+            document.getElementById('selectedCount').innerText = checkboxes.length;
 
-            if (isDeleteMode && selectedRowIndexes.size > 0) {
+            if (isDeleteMode && checkboxes.length > 0) {
                 confirmBtn.classList.remove('hidden');
             } else {
                 confirmBtn.classList.add('hidden');
             }
         }
 
-        async function deleteSelectedOrders() {
-            if (selectedRowIndexes.size === 0) return;
+        function toggleSelectAll(source) {
+            const checkboxes = document.querySelectorAll('.order-checkbox');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+            updateSelectedCount();
+        }
 
-            const confirmDelete = confirm(`ยืนยันการลบ ${selectedRowIndexes.size} รายการที่เลือกออกจาก Google Sheets?`);
-            if (!confirmDelete) return;
+        async function deleteSelectedOrders() {
+            const checkboxes = document.querySelectorAll('.order-checkbox:checked');
+            if (checkboxes.length === 0) return;
+
+            if (!confirm(`ยืนยันการลบรายการที่เลือกทั้งหมด ${checkboxes.length} รายการ?`)) return;
 
             const confirmBtn = document.getElementById('confirmDeleteBtn');
-            const toggleBtn = document.getElementById('toggleDeleteBtn');
             confirmBtn.disabled = true;
-            toggleBtn.disabled = true;
             confirmBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> กำลังลบ...`;
 
+            const rowsToDelete = Array.from(checkboxes)
+                .map(cb => parseInt(cb.value, 10))
+                .filter(row => !isNaN(row))
+                .sort((a, b) => b - a);
+
             try {
+                // ส่งคำสั่งลบแบบอาเรย์ครั้งเดียวจบ
                 await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: "delete",
-                        rowIndexes: Array.from(selectedRowIndexes)
-                    })
+                    body: JSON.stringify({ action: 'delete', rows: rowsToDelete })
                 });
 
-                // รอให้ Google Sheets ประมวลผลสักครู่แล้วดึงข้อมูลใหม่เพื่ออัปเดต rowIndex ทั้งหมดให้ตรง
-                await new Promise(resolve => setTimeout(resolve, 1200));
+                isDeleteMode = false;
+                document.getElementById('selectHeader').classList.add('hidden');
+                confirmBtn.classList.add('hidden');
+                
+                const toggleBtn = document.getElementById('toggleDeleteBtn');
+                toggleBtn.innerHTML = `<i class="fa-solid fa-list-check"></i> เลือกลบรายการ`;
+                toggleBtn.className = "px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5";
+
                 await fetchOrdersFromCloud();
-                toggleDeleteMode();
             } catch (error) {
                 console.error("Delete failed:", error);
                 alert("เกิดข้อผิดพลาดในการลบข้อมูล");
             } finally {
                 confirmBtn.disabled = false;
-                toggleBtn.disabled = false;
+                confirmBtn.innerHTML = `<i class="fa-solid fa-trash-can"></i> ลบที่เลือก (<span id="selectedCount">0</span>)`;
             }
         }
 
@@ -375,13 +347,12 @@
             let productCounts = {};
             let matchCount = 0;
 
-            orders.slice().reverse().forEach((order, idx) => {
+            orders.slice().reverse().forEach((order, index) => {
                 const itemTime = order.time || order.date || order.dateRaw || order[0];
                 const itemName = order.item || order.product || order[1] || '-';
                 const qty = Number(order.qty || order[2]) || 0;
                 const total = Number(order.total || order[3]) || 0;
-                // ใช้ rowIndex จาก Sheet (หากเป็นรายการที่เพิ่งเพิ่มสดๆ ให้คำนวณแถวถัดไป)
-                const rowIndex = order.rowIndex || (orders.length - idx + 1);
+                const rowIndex = order.rowIndex || (orders.length - index + 1);
                 
                 const d = parseOrderDate(itemTime);
 
@@ -397,8 +368,7 @@
                     matchCount++;
 
                     const row = document.createElement('tr');
-                    const isChecked = selectedRowIndexes.has(rowIndex);
-                    row.className = isChecked ? "bg-rose-50/70 transition-colors" : "hover:bg-slate-50/80 transition-colors";
+                    row.className = "hover:bg-slate-50/80 transition-colors";
 
                     let badgeStyle = "bg-slate-100 text-slate-700";
                     if (itemName.includes('โกโก้')) badgeStyle = "bg-amber-100 text-amber-800";
@@ -406,13 +376,11 @@
                     else if (itemName.includes('ชาเขียว')) badgeStyle = "bg-emerald-100 text-emerald-800";
                     else if (itemName.includes('ปังปิ้ง')) badgeStyle = "bg-yellow-100 text-yellow-800";
 
-                    const checkboxCell = isDeleteMode ? `
-                        <td class="py-3.5 pl-5 pr-2">
-                            <input type="checkbox" value="${rowIndex}" ${isChecked ? 'checked' : ''} 
-                                   onchange="toggleRowSelection(${rowIndex}, this)" 
-                                   class="row-checkbox w-4 h-4 rounded border-slate-300 text-rose-600 focus:ring-rose-500 cursor-pointer">
-                        </td>
-                    ` : '';
+                    const checkboxCell = isDeleteMode 
+                        ? `<td class="py-3.5 px-4 text-center">
+                               <input type="checkbox" value="${rowIndex}" onchange="updateSelectedCount()" class="order-checkbox w-4 h-4 rounded border-slate-300 text-rose-600 focus:ring-rose-500 cursor-pointer">
+                           </td>` 
+                        : '';
 
                     row.innerHTML = `
                         ${checkboxCell}
@@ -448,7 +416,6 @@
             document.getElementById('statBestSeller').innerText = bestSeller;
         }
 
-        // Handle Add Order
         document.getElementById('orderForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -461,7 +428,7 @@
             const total = price * qty;
 
             const now = new Date();
-            const timeStr = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear() + 543} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const timeStr = `'${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear() + 543} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
             const newOrder = {
                 time: timeStr,
@@ -482,7 +449,6 @@
                 });
 
                 statusMsg.innerText = "บันทึกเรียบร้อย!";
-                // ซิงค์ข้อมูลใหม่เพื่อให้ได้ rowIndex ที่ถูกต้องจาก Sheet
                 await fetchOrdersFromCloud();
 
                 setTimeout(() => { statusMsg.innerText = ""; }, 3000);
@@ -494,7 +460,6 @@
             }
         });
 
-        // Initialize App on startup
         fetchOrdersFromCloud();
     </script>
 </body>

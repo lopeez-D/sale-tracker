@@ -51,7 +51,6 @@
                 <label for="monthFilter" class="text-xs sm:text-sm font-semibold text-slate-700 whitespace-nowrap">เลือกเดือน:</label>
                 <select id="monthFilter" onchange="render()" 
                         class="bg-slate-50 border border-slate-300 text-slate-800 text-xs sm:text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 p-2 font-medium cursor-pointer transition-all">
-                    <!-- JavaScript จะเติมตัวเลือกเดือนให้เองอัตโนมัติ -->
                 </select>
             </div>
         </div>
@@ -60,7 +59,7 @@
     <!-- Main Container -->
     <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
 
-        <!-- Section 1: Dashboard Stats (เรียง 5 การ์ดในแถวเดียว) -->
+        <!-- Section 1: Dashboard Stats -->
         <section>
             <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
@@ -122,13 +121,27 @@
 
         <!-- Section 3: History Table -->
         <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div class="px-5 py-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="font-bold text-slate-800 text-base">ประวัติการขาย (จาก Google Sheets)</h2>
+                
+                <!-- Delete Mode Controls -->
+                <div class="flex items-center gap-2">
+                    <button type="button" id="confirmDeleteBtn" onclick="deleteSelectedOrders()" class="hidden py-1.5 px-3 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl transition-all shadow-sm flex items-center gap-1.5">
+                        <i class="fa-solid fa-trash-can"></i> ลบที่เลือก (<span id="selectedCount">0</span>)
+                    </button>
+                    <button type="button" id="toggleDeleteBtn" onclick="toggleDeleteMode()" class="py-1.5 px-3 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-list-check"></i> เลือกลบรายการ
+                    </button>
+                </div>
             </div>
+
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200/80">
+                            <th id="selectAllHeader" class="py-3.5 pl-5 pr-2 w-10 hidden">
+                                <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded border-slate-300 text-rose-600 focus:ring-rose-500 cursor-pointer">
+                            </th>
                             <th class="py-3.5 px-5">วันที่ / เวลา</th>
                             <th class="py-3.5 px-5">สินค้า</th>
                             <th class="py-3.5 px-5 text-center">จำนวน</th>
@@ -136,7 +149,7 @@
                         </tr>
                     </thead>
                     <tbody id="orderTableBody" class="divide-y divide-slate-100">
-                        <tr><td colspan="4" class="text-center py-8 text-slate-400">กำลังโหลดข้อมูลจาก Cloud...</td></tr>
+                        <tr><td colspan="5" class="text-center py-8 text-slate-400">กำลังโหลดข้อมูลจาก Cloud...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -155,6 +168,8 @@
         };
 
         let orders = [];
+        let isDeleteMode = false;
+        let selectedRowIndexes = new Set();
 
         const thaiMonths = [
             "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
@@ -174,7 +189,7 @@
                 const parts = datePart.split('/');
                 if (parts.length === 3) {
                     const day = parseInt(parts[0], 10);
-                    const month = parseInt(parts[1], 10) - 1; // 0-11
+                    const month = parseInt(parts[1], 10) - 1;
                     let year = parseInt(parts[2], 10);
 
                     if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
@@ -183,11 +198,9 @@
                     return { day: day, month: month, year: year };
                 }
             }
-
             return null;
         }
 
-        // สร้างตัวเลือกเดือนใน Dropdown อัตโนมัติ
         function initMonthSelector() {
             const selector = document.getElementById('monthFilter');
             const currentSelection = selector.value;
@@ -236,11 +249,103 @@
             } catch (error) {
                 console.error("Error loading data:", error);
                 document.getElementById('orderTableBody').innerHTML = 
-                    `<tr><td colspan="4" class="text-center py-8 text-rose-500">โหลดข้อมูลไม่สำเร็จ</td></tr>`;
+                    `<tr><td colspan="5" class="text-center py-8 text-rose-500">โหลดข้อมูลไม่สำเร็จ</td></tr>`;
             }
         }
 
-        // Render metrics & table rows filtered strictly by selected month
+        // เปิด/ปิด โหมดเลือกลบรายการ
+        function toggleDeleteMode() {
+            isDeleteMode = !isDeleteMode;
+            selectedRowIndexes.clear();
+            document.getElementById('selectAllCheckbox').checked = false;
+
+            const toggleBtn = document.getElementById('toggleDeleteBtn');
+            const selectAllHeader = document.getElementById('selectAllHeader');
+
+            if (isDeleteMode) {
+                toggleBtn.innerHTML = `<i class="fa-solid fa-xmark"></i> ยกเลิก`;
+                toggleBtn.className = "py-1.5 px-3 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5";
+                selectAllHeader.classList.remove('hidden');
+            } else {
+                toggleBtn.innerHTML = `<i class="fa-solid fa-list-check"></i> เลือกลบรายการ`;
+                toggleBtn.className = "py-1.5 px-3 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5";
+                selectAllHeader.classList.add('hidden');
+            }
+
+            updateDeleteButtonUI();
+            render();
+        }
+
+        function toggleRowSelection(rowIndex, checkbox) {
+            if (checkbox.checked) {
+                selectedRowIndexes.add(rowIndex);
+            } else {
+                selectedRowIndexes.delete(rowIndex);
+                document.getElementById('selectAllCheckbox').checked = false;
+            }
+            updateDeleteButtonUI();
+        }
+
+        function toggleSelectAll(masterCheckbox) {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            selectedRowIndexes.clear();
+            checkboxes.forEach(cb => {
+                cb.checked = masterCheckbox.checked;
+                if (masterCheckbox.checked) {
+                    selectedRowIndexes.add(Number(cb.value));
+                }
+            });
+            updateDeleteButtonUI();
+        }
+
+        function updateDeleteButtonUI() {
+            const confirmBtn = document.getElementById('confirmDeleteBtn');
+            const countSpan = document.getElementById('selectedCount');
+            countSpan.innerText = selectedRowIndexes.size;
+
+            if (isDeleteMode && selectedRowIndexes.size > 0) {
+                confirmBtn.classList.remove('hidden');
+            } else {
+                confirmBtn.classList.add('hidden');
+            }
+        }
+
+        async function deleteSelectedOrders() {
+            if (selectedRowIndexes.size === 0) return;
+
+            const confirmDelete = confirm(`ยืนยันการลบ ${selectedRowIndexes.size} รายการที่เลือกออกจาก Google Sheets?`);
+            if (!confirmDelete) return;
+
+            const confirmBtn = document.getElementById('confirmDeleteBtn');
+            const toggleBtn = document.getElementById('toggleDeleteBtn');
+            confirmBtn.disabled = true;
+            toggleBtn.disabled = true;
+            confirmBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> กำลังลบ...`;
+
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: "delete",
+                        rowIndexes: Array.from(selectedRowIndexes)
+                    })
+                });
+
+                // รอให้ Google Sheets ประมวลผลสักครู่แล้วดึงข้อมูลใหม่เพื่ออัปเดต rowIndex ทั้งหมดให้ตรง
+                await new Promise(resolve => setTimeout(resolve, 1200));
+                await fetchOrdersFromCloud();
+                toggleDeleteMode();
+            } catch (error) {
+                console.error("Delete failed:", error);
+                alert("เกิดข้อผิดพลาดในการลบข้อมูล");
+            } finally {
+                confirmBtn.disabled = false;
+                toggleBtn.disabled = false;
+            }
+        }
+
         function render() {
             const tableBody = document.getElementById('orderTableBody');
             tableBody.innerHTML = '';
@@ -270,21 +375,21 @@
             let productCounts = {};
             let matchCount = 0;
 
-            orders.slice().reverse().forEach((order) => {
+            orders.slice().reverse().forEach((order, idx) => {
                 const itemTime = order.time || order.date || order.dateRaw || order[0];
                 const itemName = order.item || order.product || order[1] || '-';
                 const qty = Number(order.qty || order[2]) || 0;
                 const total = Number(order.total || order[3]) || 0;
+                // ใช้ rowIndex จาก Sheet (หากเป็นรายการที่เพิ่งเพิ่มสดๆ ให้คำนวณแถวถัดไป)
+                const rowIndex = order.rowIndex || (orders.length - idx + 1);
                 
                 const d = parseOrderDate(itemTime);
 
-                // คำนวณยอดและจำนวนชิ้นเฉพาะของวันนี้
                 if (d && d.day === todayDay && d.month === todayMonth && d.year === todayYear) {
                     todayMoney += total;
                     todayItemsCount += qty;
                 }
 
-                // กรองคำนวณและแสดงข้อมูลของเดือนที่เลือกใน Dropdown
                 if (d && d.month === selMonth && d.year === selYear) {
                     monthlyMoney += total;
                     monthlyItemsCount += qty; 
@@ -292,7 +397,8 @@
                     matchCount++;
 
                     const row = document.createElement('tr');
-                    row.className = "hover:bg-slate-50/80 transition-colors";
+                    const isChecked = selectedRowIndexes.has(rowIndex);
+                    row.className = isChecked ? "bg-rose-50/70 transition-colors" : "hover:bg-slate-50/80 transition-colors";
 
                     let badgeStyle = "bg-slate-100 text-slate-700";
                     if (itemName.includes('โกโก้')) badgeStyle = "bg-amber-100 text-amber-800";
@@ -300,7 +406,16 @@
                     else if (itemName.includes('ชาเขียว')) badgeStyle = "bg-emerald-100 text-emerald-800";
                     else if (itemName.includes('ปังปิ้ง')) badgeStyle = "bg-yellow-100 text-yellow-800";
 
+                    const checkboxCell = isDeleteMode ? `
+                        <td class="py-3.5 pl-5 pr-2">
+                            <input type="checkbox" value="${rowIndex}" ${isChecked ? 'checked' : ''} 
+                                   onchange="toggleRowSelection(${rowIndex}, this)" 
+                                   class="row-checkbox w-4 h-4 rounded border-slate-300 text-rose-600 focus:ring-rose-500 cursor-pointer">
+                        </td>
+                    ` : '';
+
                     row.innerHTML = `
+                        ${checkboxCell}
                         <td class="py-3.5 px-5 font-medium text-slate-600 whitespace-nowrap font-mono text-xs">${itemTime}</td>
                         <td class="py-3.5 px-5 font-semibold text-slate-900">
                             <span class="inline-block px-2.5 py-1 rounded-lg text-xs font-semibold ${badgeStyle}">${itemName}</span>
@@ -313,7 +428,8 @@
             });
 
             if (matchCount === 0) {
-                tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-slate-400">ไม่มีข้อมูลออเดอร์ในเดือนนี้</td></tr>`;
+                const colSpan = isDeleteMode ? 5 : 4;
+                tableBody.innerHTML = `<tr><td colspan="${colSpan}" class="text-center py-8 text-slate-400">ไม่มีข้อมูลออเดอร์ในเดือนนี้</td></tr>`;
             }
 
             let bestSeller = "-";
@@ -345,7 +461,7 @@
             const total = price * qty;
 
             const now = new Date();
-            const timeStr = `'${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear() + 543} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const timeStr = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear() + 543} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
             const newOrder = {
                 time: timeStr,
@@ -366,9 +482,8 @@
                 });
 
                 statusMsg.innerText = "บันทึกเรียบร้อย!";
-                orders.push(newOrder);
-                initMonthSelector();
-                render();
+                // ซิงค์ข้อมูลใหม่เพื่อให้ได้ rowIndex ที่ถูกต้องจาก Sheet
+                await fetchOrdersFromCloud();
 
                 setTimeout(() => { statusMsg.innerText = ""; }, 3000);
             } catch (error) {
